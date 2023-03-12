@@ -30,3 +30,14 @@ resource "azurerm_linux_function_app" "fa" {
   }
   tags = local.tags
 }
+
+resource "null_resource" "deploy_to_fa" {    
+  triggers = {
+    app_code = sha1(join("", [for f in fileset(local.app_code_location_for_terraform, "**"): filesha1(f)]))
+    deploy_cmd = local.fa_deploy_comd
+  }
+
+  provisioner "local-exec" {
+    command = local.fa_deploy_comd
+  }
+}
