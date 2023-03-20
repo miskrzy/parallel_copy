@@ -7,6 +7,14 @@ resource "azurerm_storage_account" "sa" {
   tags                     = local.tags
 }
 
+resource "azurerm_application_insights" "appins" {
+  name                = local.application_insights_name
+  location            = local.location
+  resource_group_name = local.resource_group_name
+  application_type    = "web"
+  tags                = local.tags
+}
+
 resource "azurerm_service_plan" "fasp" {
   name                = local.service_plan_name
   location            = local.location
@@ -27,17 +35,21 @@ resource "azurerm_linux_function_app" "fa" {
     application_stack {
       python_version = "3.9"
     }
+    application_insights_key = "${azurerm_application_insights.appins.instrumentation_key}"
   }
   tags = local.tags
 }
 
 resource "null_resource" "deploy_to_fa" {    
   triggers = {
-    app_code = sha1(join("", [for f in fileset(local.app_code_location_for_terraform, "**"): filesha1(f)]))
-    deploy_cmd = local.fa_deploy_comd
+    app_code = sha1(join("", [for f in fileset(local.app_code_location_for_terraform, "**"): filesha1("${local.app_code_location_for_terraform}\\${f}")]))
+    deploy_cmd = local.fa_deploy_cmd
   }
-
   provisioner "local-exec" {
-    command = local.fa_deploy_comd
+    command = local.fa_deploy_cmd
+    working_dir = local.cmd_work_dir
   }
+  depends_on = [
+    azurerm_linux_function_app.fa
+  ]
 }

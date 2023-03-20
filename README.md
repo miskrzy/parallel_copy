@@ -9,6 +9,9 @@ az login
 az account list
 az accout set --subscription "sub_name"
 
+## navigate to terraform dir
+cd infra/terraform
+
 # terraform commands
 ## initialize provider
 terraform init
@@ -25,5 +28,5 @@ terraform apply "tfplan"
 ## destroy resources
 terraform destroy
 
-# things to look at
-deploy code with terraform (null_resource): https://www.maxivanov.io/publish-azure-functions-code-with-terraform/
+# remarks
+code is also deployed with the null_resource in terraform using azure funtion core tool commmand
