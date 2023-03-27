@@ -1,3 +1,36 @@
+# input data lake
+resource "azurerm_storage_account" "dl_input" {
+  name                     = local.input_datalake_name
+  resource_group_name      = local.resource_group_name
+  location                 = local.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  is_hns_enabled           = "true"
+  tags                     = local.tags
+}
+
+resource "azurerm_storage_data_lake_gen2_filesystem" "dlfs_input" {
+  name               = local.input_datalake_file_system
+  storage_account_id = azurerm_storage_account.dl_input.id
+}
+
+# output data lake
+resource "azurerm_storage_account" "dl_output" {
+  name                     = local.output_datalake_name
+  resource_group_name      = local.resource_group_name
+  location                 = local.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  is_hns_enabled           = "true"
+  tags                     = local.tags
+}
+
+resource "azurerm_storage_data_lake_gen2_filesystem" "dlfs_output" {
+  name               = local.input_datalake_file_system
+  storage_account_id = azurerm_storage_account.dl_output.id
+}
+
+# function
 resource "azurerm_storage_account" "sa" {
   name                     = local.storage_account_name
   resource_group_name      = local.resource_group_name
@@ -31,6 +64,14 @@ resource "azurerm_linux_function_app" "fa" {
   service_plan_id            = azurerm_service_plan.fasp.id
   storage_account_name       = azurerm_storage_account.sa.name
   storage_account_access_key = azurerm_storage_account.sa.primary_access_key
+  app_settings = {
+    input_dl_key = azurerm_storage_account.dl_input.primary_access_key
+    input_dl_name = azurerm_storage_account.dl_input.name
+    input_dlfs_name = azurerm_storage_data_lake_gen2_filesystem.dlfs_input.name
+    output_dl_key = azurerm_storage_account.dl_output.primary_access_key
+    output_dl_name = azurerm_storage_account.dl_output.name
+    output_dlfs_name = azurerm_storage_data_lake_gen2_filesystem.dlfs_output.name
+  }
   site_config {
     application_stack {
       python_version = "3.9"
@@ -38,6 +79,12 @@ resource "azurerm_linux_function_app" "fa" {
     application_insights_key = "${azurerm_application_insights.appins.instrumentation_key}"
   }
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["hidden-link: /app-insights-instrumentation-key"],
+      tags["hidden-link: /app-insights-resource-id"]
+    ]
+  }
 }
 
 resource "null_resource" "deploy_to_fa" {    
@@ -53,3 +100,4 @@ resource "null_resource" "deploy_to_fa" {
     azurerm_linux_function_app.fa
   ]
 }
+

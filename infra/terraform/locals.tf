@@ -6,6 +6,10 @@ locals {
   service_plan_name = "${var.common_name}-fa-sp"
   storage_account_name = "${var.common_name}fasa"
   copy_function_name = "${var.common_name}-parallel-copy"
+  input_datalake_name = "${var.common_name}dlinput"
+  input_datalake_file_system = "${var.common_name}-fsinput"
+  output_datalake_file_system = "${var.common_name}-fsoutput"
+  output_datalake_name = "${var.common_name}dloutput"
   tags = {
     "Owner" = "${var.owner_tag}"
   }
