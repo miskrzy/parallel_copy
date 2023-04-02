@@ -15,7 +15,7 @@
       },
       "problemMatcher": [],
       "options": {
-        "cwd": "${workspaceFolder}/app\\parallel_copy"
+        "cwd": "${workspaceFolder}/app"
       }
     },
     {
@@ -25,7 +25,7 @@
       "problemMatcher": "$func-python-watch",
       "isBackground": true,
       "options": {
-        "cwd": "${workspaceFolder}/app\\parallel_copy"
+        "cwd": "${workspaceFolder}/app\\functions"
       }
     }
   ]
